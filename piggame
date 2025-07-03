@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dice Game</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #32608f;
+      margin: 0;
+      padding: 40px;
+      text-align: center;
+      color: white;
+    }
+
+    .game {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .players {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .player {
+      width: 300px;
+      padding: 20px;
+      background: #fff;
+      color: #000;
+    }
+
+    .player--0 {
+      background-color: #15a11c;
+    }
+
+    .player--1 {
+      background-color: #251717;
+      color: #fff;
+    }
+
+    .player--active {
+      outline: 4px solid yellow;
+    }
+
+    .score {
+      font-size: 2.5rem;
+      font-weight: bold;
+    }
+
+    .current {
+      margin-top: 10px;
+      background: #ec1a2bec;
+      border-radius: 5px;
+      padding: 10px;
+    }
+
+    .current-label {
+      font-weight: bold;
+    }
+
+    .dice {
+      width: 80px;
+      margin: 0 30px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      margin: 10px 5px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .btn--new {
+      background-color: #00bcd4;
+      color: white;
+    }
+
+    .btn--roll {
+      background-color: #ff9800;
+      color: white;
+    }
+
+    .btn--hold {
+      background-color: #4caf50;
+      color: white;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .winner {
+      background-color: gold !important;
+      color: black !important;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <main class="game">
+    <div class="players">
+      <section class="player player--0 player--active">
+        <h2 class="name" id="name--0">PLAYER 1</h2>
+        <p class="score" id="score--0">0</p>
+        <div class="current">
+          <p class="current-label">CURRENT</p>
+          <p class="current-score" id="current--0">0</p>
+        </div>
+      </section>
+
+      <img src="https://upload.wikimedia.org/wikipedia/commons/2/2c/Alea_2.png" alt="Dice" class="dice hidden" id="dice" />
+
+      <section class="player player--1">
+        <h2 class="name" id="name--1">PLAYER 2</h2>
+        <p class="score" id="score--1">0</p>
+        <div class="current">
+          <p class="current-label">CURRENT</p>
+          <p class="current-score" id="current--1">0</p>
+        </div>
+      </section>
+    </div>
+
+    <div>
+      <button class="btn btn--new">NEW GAME</button>
+      <button class="btn btn--roll">ROLL DICE</button>
+      <button class="btn btn--hold">HOLD</button>
+    </div>
+  </main>
+
+  <script>
+    const score0El = document.getElementById('score--0');
+    const score1El = document.getElementById('score--1');
+    const current0El = document.getElementById('current--0');
+    const current1El = document.getElementById('current--1');
+    const player0El = document.querySelector('.player--0');
+    const player1El = document.querySelector('.player--1');
+    const diceEl = document.getElementById('dice');
+    const btnNew = document.querySelector('.btn--new');
+    const btnRoll = document.querySelector('.btn--roll');
+    const btnHold = document.querySelector('.btn--hold');
+
+    let scores, currentScore, activePlayer, playing;
+
+    const init = function () {
+      scores = [0, 0];
+      currentScore = 0;
+      activePlayer = 0;
+      playing = true;
+
+      score0El.textContent = 0;
+      score1El.textContent = 0;
+      current0El.textContent = 0;
+      current1El.textContent = 0;
+
+      diceEl.classList.add('hidden');
+      player0El.classList.add('player--active');
+      player1El.classList.remove('player--active');
+      player0El.classList.remove('winner');
+      player1El.classList.remove('winner');
+    };
+
+    const switchPlayer = function () {
+      document.getElementById(`current--${activePlayer}`).textContent = 0;
+      currentScore = 0;
+      activePlayer = activePlayer === 0 ? 1 : 0;
+      player0El.classList.toggle('player--active');
+      player1El.classList.toggle('player--active');
+    };
+
+    btnRoll.addEventListener('click', function () {
+      if (playing) {
+        const dice = Math.trunc(Math.random() * 6) + 1;
+        diceEl.src = `https://upload.wikimedia.org/wikipedia/commons/${["2/2c/Alea_1.png","b/b8/Alea_2.png","2/2f/Alea_3.png","8/8d/Alea_4.png","5/55/Alea_5.png","f/f4/Alea_6.png"][dice - 1]}`;
+        diceEl.classList.remove('hidden');
+
+        if (dice !== 1) {
+          currentScore += dice;
+          document.getElementById(`current--${activePlayer}`).textContent = currentScore;
+        } else {
+          switchPlayer();
+        }
+      }
+    });
+
+    btnHold.addEventListener('click', function () {
+      if (playing) {
+        scores[activePlayer] += currentScore;
+        document.getElementById(`score--${activePlayer}`).textContent = scores[activePlayer];
+
+        if (scores[activePlayer] >= 100) {
+          playing = false;
+          diceEl.classList.add('hidden');
+          document.querySelector(`.player--${activePlayer}`).classList.add('winner');
+          alert(`🎉 Player ${activePlayer + 1} wins!`);
+        } else {
+          switchPlayer();
+        }
+      }
+    });
+
+    btnNew.addEventListener('click', init);
+
+    init();
+  </script>
+
+</body>
+</html>
